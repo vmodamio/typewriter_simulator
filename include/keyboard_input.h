@@ -10,7 +10,8 @@
 #define MOD_MASK (1 << 6)
 #define KEY_MASK ((1 << 6) -1 )
 
-/* for simulation,, returns the typewriter key event, mapped from the X11 keycode */
+/* for simulation,, returns the typewriter key event, mapped from the X11 keycode 
+ * REPLACES KBDMAP in the original typewriter (maps keyboard matrix to a keycode)*/
 const int keyeventLUT[256] = {0,0,0,0,0,0,0,0,0, 1, 
 	       2,3,4,5,6,7,8,9,10,11, 
 	       12,13,14,15,16,17,18,19,20,21,
@@ -421,4 +422,4 @@ static int keymap_shift[] =  { VK_NONE,  // 0
 	VK_TAB, VK_Q, VK_W, VK_E, VK_R, VK_T, VK_Y, VK_U, VK_I, VK_O, VK_P, VK_LEFTBRACE, VK_RIGHTBRACE, VK_ENTER,  // 28 
 	VK_CAPSLOCK, VK_A, VK_S, VK_D, VK_F, VK_G, VK_H, VK_J, VK_K, VK_L, VK_COLON, VK_QUOTEDBL, VK_VERTICALBAR,  // 41
 	          VK_LESS, VK_Z, VK_X, VK_C, VK_V, VK_B, VK_N, VK_M, VK_LESS, VK_GREATER, VK_QUESTION,  // 52
-	          VK_SPACE, VK_SYS, VK_LANG }; // 55
+	          VK_SPACE, VK_SYS, VK_SPACE }; // 55

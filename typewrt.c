@@ -13,6 +13,7 @@
 #define PSF_GLYPH_SIZE 16
 
 uint8_t cursor[PSF_GLYPH_SIZE] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+bool exitcode = false;
 
 struct typewrt {
   unsigned char *buf;
@@ -77,25 +78,41 @@ int main() {
     XEvent e;
     while (1) {
         XNextEvent(t.d, &e);
-        if (e.type == Expose) {
-            setCur(&t, t.curx, t.cury);
-            XPutImage(t.d, t.w, t.gc, t.img, 0, 0, 0, 0, WIDTH, HEIGHT);
-        }
-        if (e.type == KeyPress) {
-            // Update image data on key press (invert)
-            Virtual_Key vk = keymap[ (keyeventLUT[e.xkey.keycode] & KEY_MASK) ];
-	    if (vk >= VKCHAROFFSET) {
-	        uint8_t fontchar = fontmap[vk - VKCHAROFFSET];
-                displayChar(fontchar, &t);
-                setCur(&t, t.curx +1, t.cury);
-	    }
-	    else if (vk == VK_ENTER) {
-                setCur(&t, 0, t.cury +1);
-	    };
-            XPutImage(t.d, t.w, t.gc, t.img, 0, 0, 0, 0, WIDTH, HEIGHT);
-	    XFlush(t.d);
-	    if (e.xkey.keycode == 9) break; 
-        }
+	switch (e.type) {
+            case Expose: 
+                setCur(&t, t.curx, t.cury);
+                XPutImage(t.d, t.w, t.gc, t.img, 0, 0, 0, 0, WIDTH, HEIGHT);
+		break;
+        
+	    case KeyRelease: 
+		if (keyeventLUT[e.xkey.keycode] & MOD_MASK) {
+		    t.modkeys &= ~(keyeventLUT[e.xkey.keycode] & ((1<<5)-1));
+		}
+		break;
+	    case KeyPress: 
+		if (keyeventLUT[e.xkey.keycode] & MOD_MASK) {
+		    t.modkeys |= (keyeventLUT[e.xkey.keycode] & ((1<<5)-1));
+		    break;
+		}
+                Virtual_Key vk = 0;
+		if ((t.modkeys) & 1) vk = keymap_shift[ (keyeventLUT[e.xkey.keycode] & KEY_MASK) ];
+		else if ((t.modkeys) == 0) vk = keymap[ (keyeventLUT[e.xkey.keycode] & KEY_MASK) ];
+	        if (vk >= VKCHAROFFSET) {
+	            uint8_t fontchar = fontmap[vk - VKCHAROFFSET];
+                    displayChar(fontchar, &t);
+                    setCur(&t, t.curx +1, t.cury);
+	        }
+	        else if (vk == VK_ENTER) {
+                    setCur(&t, 0, t.cury +1);
+	        };
+                XPutImage(t.d, t.w, t.gc, t.img, 0, 0, 0, 0, WIDTH, HEIGHT);
+	        XFlush(t.d);
+	        if (e.xkey.keycode == 9) {
+		       exitcode = true;
+                       break;
+		}
+	}
+	if (exitcode) break;
     }
     typewrt_close(&t);
     return 0;
